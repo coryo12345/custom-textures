@@ -1,0 +1,14 @@
+{
+  "name": "migrate-barely-defaults",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {},
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^24.1.0"
+  }
+}

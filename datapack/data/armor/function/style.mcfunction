@@ -1,0 +1,1 @@
+$item modify entity @p armor.$(slot) {"function":"minecraft:set_components","components": {"minecraft:equippable":{"slot":"$(slot)","asset_id":"$(style)"}}}

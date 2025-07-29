@@ -1,0 +1,9 @@
+{
+    "layers": {
+        "humanoid": [
+            {
+                "texture": "common/wizard_hat"
+            }
+        ]
+    }
+}
