@@ -4,8 +4,8 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [64, 64],
 	"textures": {
-		"0": "common/wizard_hat",
-		"particle": "common/wizard_hat"
+		"0": "block/carved_pumpkin/wizard_hat",
+		"particle": "block/carved_pumpkin/wizard_hat"
 	},
 	"elements": [
 		{

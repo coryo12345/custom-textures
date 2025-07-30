@@ -5,7 +5,7 @@
         "component": "minecraft:custom_name",
         "on_true": {
             "type": "minecraft:select",
-            "model": "minecraft:item/carved_pumpkin",
+            "model": "minecraft:block/carved_pumpkin",
             "property": "minecraft:component",
             "component": "minecraft:custom_name",
             "cases": [
@@ -19,12 +19,12 @@
             ],
             "fallback": {
                 "type": "minecraft:model",
-                "model": "minecraft:item/carved_pumpkin"
+                "model": "minecraft:block/carved_pumpkin"
             }
         },
         "on_false": {
             "type": "minecraft:model",
-            "model": "minecraft:item/carved_pumpkin"
+            "model": "minecraft:block/carved_pumpkin"
         }
     }
 }
