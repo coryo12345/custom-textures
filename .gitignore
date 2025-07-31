@@ -1,8 +1,7 @@
 node_modules/
-namedvariants.zip
 namedvariants/
 out/
-custom-textures.zip
+*.zip
 
 # The dispatchers get created dynamically by the migrate script
 datapack/data/armortexturemapper/function/dispatch
