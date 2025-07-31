@@ -1,0 +1,1 @@
+tellraw @a {"text":"[Armor] Rename detection datapack loaded.","color":"yellow"}

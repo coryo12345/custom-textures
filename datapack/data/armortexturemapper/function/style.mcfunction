@@ -1,1 +1,2 @@
+# this is a one-off function to help test stuff
 $item modify entity @p armor.$(slot) {"function":"minecraft:set_components","components": {"minecraft:equippable":{"slot":"$(slot)","asset_id":"$(style)"}}}
