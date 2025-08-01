@@ -1,18 +1,21 @@
 // this script creates new resources in an extracted namedvariants resourcepack directory to support:
 // 1. Armor textures that are recognizeable via vanilla MC (no optifine)
 // 2. Creating asset files for the datapack in this repo to automatically change assets for equipment based on name
+// It also processes the equipment in the resourcepack/ folder of this repo to generate datapack files
 import fs from "node:fs";
 import path from "node:path";
 
-const resourcePackDir = process.argv[2];
-if (!resourcePackDir) {
+const namedVariantDir = process.argv[2];
+if (!namedVariantDir) {
   console.error("Usage: node migrate.js path/to/extracted_barelydefault/");
   process.exit(1);
 }
 
-function main() {
-  const datapackRegister = new DatapackVariantRegister();
-  const rootDir = path.join(resourcePackDir, "/assets", "/minecraft");
+/**
+ * @param {DatapackVariantRegister} datapackRegister 
+ */
+function processNamedVariants(datapackRegister) {
+  const rootDir = path.join(namedVariantDir, "/assets", "/minecraft");
 
   // parse optifine files
   const optifineModels = path.join(rootDir, "/optifine", "/cit", "/models");
@@ -114,20 +117,33 @@ function main() {
       }
     }
   }
-
-  console.log("Creating Datapack Dispatchers")
-  // now we need to write out the datapack dispatch functions
-  const functionDir = path.join(resourcePackDir, '..', 'datapack', 'data', 'armortexturemapper', 'function', 'dispatch');
-  fs.mkdirSync(functionDir, { recursive: true });
-
-  const fileDefs = datapackRegister.getFileDefs()
-  fileDefs.forEach(fileDef => {
-    const filepath = path.join(functionDir, fileDef.name);
-    fs.writeFileSync(filepath, fileDef.content + '\n', { encoding: 'utf-8' });
-  });
 }
 
+/**
+ * @param {DatapackVariantRegister} datapackRegister 
+ */
+function processResourcePackEquipment(datapackRegister) {
+  const resourcepackDir = path.join(namedVariantDir, '..', 'resourcepack', 'assets', 'minecraft')
+  const equipmentDir = path.join(resourcepackDir, 'equipment');
+  const tiers = fs.readdirSync(equipmentDir);
 
+  for (const tier of tiers) {
+    const files = fs.readdirSync(path.join(equipmentDir, tier));
+    for (const file of files) {
+      if (!file.endsWith('.json')) continue;
+
+      const style = file.replaceAll('.json', '');
+
+      if (tier == 'common') {
+        datapackRegister.getTiers().filter(t => t != 'common').forEach(t => {
+          datapackRegister.register(t, capitalize(style.replaceAll('_', ' ')), `common/${style}`);
+        });
+      } else {
+        datapackRegister.register(tier, capitalize(style.replaceAll('_', ' ')), `${tier}/${style}`);
+      }
+    }
+  }
+}
 
 // Utils / Classes / Libraries
 
@@ -159,6 +175,10 @@ class DatapackVariantRegister {
     if (!existing) {
       this.#data[tier].push({ name, asset_id });
     }
+  }
+
+  getTiers() {
+    return Object.keys(this.#data)
   }
 
   /** @typedef {{name: string; content: string;}} FileDefinition */
@@ -222,4 +242,17 @@ function capitalize(str) {
 
 
 // execution
-main();
+const datapackRegister = new DatapackVariantRegister();
+
+processNamedVariants(datapackRegister);
+processResourcePackEquipment(datapackRegister);
+
+console.log("Creating Datapack Dispatchers")
+// now we need to write out the datapack dispatch functions
+const functionDir = path.join(namedVariantDir, '..', 'datapack', 'data', 'armortexturemapper', 'function', 'dispatch');
+fs.mkdirSync(functionDir, { recursive: true });
+const fileDefs = datapackRegister.getFileDefs()
+fileDefs.forEach(fileDef => {
+  const filepath = path.join(functionDir, fileDef.name);
+  fs.writeFileSync(filepath, fileDef.content + '\n', { encoding: 'utf-8' });
+});

@@ -1,0 +1,14 @@
+{
+    "layers": {
+        "humanoid": [
+            {
+                "texture": "common/stormtrooper"
+            }
+        ],
+        "humanoid_leggings": [
+            {
+                "texture": "common/stormtrooper"
+            }
+        ]
+    }
+}
