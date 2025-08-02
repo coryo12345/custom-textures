@@ -15,6 +15,13 @@
                         "type": "minecraft:model",
                         "model": "minecraft:item/carved_pumpkin/wizard_hat"
                     }
+                },
+                {
+                    "when": "Teapot",
+                    "model": {
+                        "type": "minecraft:model",
+                        "model": "minecraft:item/carved_pumpkin/teapot"
+                    }
                 }
             ],
             "fallback": {
