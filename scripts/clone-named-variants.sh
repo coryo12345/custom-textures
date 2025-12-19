@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SOURCE_URL="https://cdn.modrinth.com/data/ybctGziT/versions/8QKro1nd/AllTheNamedVariantsV17.11.zip"
+SOURCE_URL="https://cdn.modrinth.com/data/ybctGziT/versions/8QQ2Sza1/TooManyRenamesV18.20.zip"
 
 DIR=$(dirname -- "$( readlink -f -- "$0"; )")
 

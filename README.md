@@ -8,10 +8,9 @@ This pack does not include Mickey Joe's textures, but includes my textures, and 
 - `node` & `npm` required
 
 ## Run
-`npm run build:all`
+`build.sh`
 
-
-## TODO
-- IGNORE optifine/ directory on merge
-- elytra
-- shields
+## Updating
+- Update `scripts/clone-named-variants.sh` with the url of the new version of the pack.
+- Run `clean.sh`
+- Run `build.sh`
