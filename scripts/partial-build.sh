@@ -16,6 +16,9 @@ node "$DIR/migrate.js" "$DIR/../namedvariants"
 echo "Merging Assets"
 "$DIR/merge.sh"
 
+echo "Applying Fixes"
+node "$DIR/apply-item-fixes.js" "$DIR/../out"
+
 echo "Zipping..."
 "$DIR/zip.sh"
 
