@@ -13,16 +13,18 @@ if (!outDir) {
 }
 
 function applyItemFixes() {
-  const itemsDir = path.join(outDir, "assets/", "minecraft/", "items/");
-  const files = fs.readdirSync(itemsDir);
-  files.forEach((file) => {
-    const fullFileName = path.join(itemsDir, file);
-    if (file.endsWith("_spear.json")) {
-      fixSpearFallbackModel(fullFileName);
-    } else if (file.endsWith("trident.json")) {
-      fixTridentFallbackModel(fullFileName);
-    }
-  });
+  // As of v19.9 there are no fixes needed
+
+  // const itemsDir = path.join(outDir, "assets/", "minecraft/", "items/");
+  // const files = fs.readdirSync(itemsDir);
+  // files.forEach((file) => {
+  //   const fullFileName = path.join(itemsDir, file);
+  //   if (file.endsWith("_spear.json")) {
+  //     fixSpearFallbackModel(fullFileName);
+  //   } else if (file.endsWith("trident.json")) {
+  //     fixTridentFallbackModel(fullFileName);
+  //   }
+  // });
 }
 
 function applyModelFixes() {
