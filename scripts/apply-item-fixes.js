@@ -12,19 +12,13 @@ if (!outDir) {
   process.exit(1);
 }
 
-function applyItemFixes() {
-  // As of v19.9 there are no fixes needed
+// Named variants not updated for 26.1 - need to apply some fixes to v19.9 to work
 
-  // const itemsDir = path.join(outDir, "assets/", "minecraft/", "items/");
-  // const files = fs.readdirSync(itemsDir);
-  // files.forEach((file) => {
-  //   const fullFileName = path.join(itemsDir, file);
-  //   if (file.endsWith("_spear.json")) {
-  //     fixSpearFallbackModel(fullFileName);
-  //   } else if (file.endsWith("trident.json")) {
-  //     fixTridentFallbackModel(fullFileName);
-  //   }
-  // });
+function applyItemFixes() {
+  const macePath = path.join(outDir, "assets", "minecraft", "items", "mace.json");
+  if (fs.existsSync(macePath)) {
+    fixMaceItemSyntax(macePath);
+  }
 }
 
 function applyModelFixes() {
@@ -33,82 +27,58 @@ function applyModelFixes() {
 
 // fix implementations ---------------------------------------------
 
-/**
- * Minecraft default spears have a different model for the GUI view and when you hold it
- * Namedvariants doesn't account for this, so it doesn't appear properly in your hand
- * This correctly sets the default model for spears as the fallback
- * @param {string} filename
- */
-function fixSpearFallbackModel(filename) {
-  // we handle all spear tiers in this function, so we need to get the name for the tier
-  // e.g. "diamond_spear" so we can reference the correct base models
-  const itemName = filename.split("/").at(-1).replace(".json", "");
-
-  let definitionStr = fs.readFileSync(filename, { encoding: "utf-8" });
-  const definition = JSON.parse(definitionStr);
-  definition.model.fallback = {
-    type: "minecraft:select",
-    cases: [
-      {
-        model: {
-          type: "minecraft:model",
-          model: `minecraft:item/${itemName}`,
-        },
-        when: ["gui", "ground", "fixed", "on_shelf"],
-      },
-    ],
-    fallback: {
-      type: "minecraft:model",
-      model: `minecraft:item/${itemName}_in_hand`,
-    },
-    property: "minecraft:display_context",
-  };
-  definitionStr = JSON.stringify(definition, null, 4);
-  fs.writeFileSync(filename, definitionStr, { encoding: "utf-8" });
+// Converts mace.json from old item model syntax to modern syntax.
+//
+// Old syntax wraps everything in a condition(has_component) → select chain and
+// uses a bare string for select's default ("model" property). It also allows
+// condition nodes to carry a top-level "model" property as a default layer.
+//
+// Modern syntax:
+//   - select sits at the root; fallback is a proper node object
+//   - condition nodes never carry a "model" property; that pattern becomes a
+//     composite of [condition(on_false: empty), base model]
+function fixMaceItemSyntax(filePath) {
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  data.model = migrateModelNode(data.model);
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
-/**
- * Trident model definition is not just a reference to a model, because the appearance is different based on the context
- * Namedvariants doesn't account for this, so to make default tridents look correct, we apply the default model definition as the fallback
- * @param {string} filename
- */
-function fixTridentFallbackModel(filename) {
-  let definitionStr = fs.readFileSync(filename, { encoding: "utf-8" });
-  const definition = JSON.parse(definitionStr);
-  // Apply the default from: https://misode.github.io/assets/item/?version=1.21.11&preset=trident
-  definition.model.fallback = {
-    type: "minecraft:select",
-    cases: [
-      {
-        model: {
-          type: "minecraft:model",
-          model: "minecraft:item/trident",
-        },
-        when: ["gui", "ground", "fixed", "on_shelf"],
-      },
-    ],
-    fallback: {
-      type: "minecraft:condition",
-      on_false: {
-        type: "minecraft:special",
-        base: "minecraft:item/trident_in_hand",
-        model: {
-          type: "minecraft:trident",
-        },
-      },
-      on_true: {
-        type: "minecraft:special",
-        base: "minecraft:item/trident_throwing",
-        model: {
-          type: "minecraft:trident",
-        },
-      },
-      property: "minecraft:using_item",
-    },
-    property: "minecraft:display_context",
-  };
-  definitionStr = JSON.stringify(definition, null, 4);
-  fs.writeFileSync(filename, definitionStr, { encoding: "utf-8" });
+function migrateModelNode(node) {
+  if (!node || typeof node !== "object") return node;
+  if (Array.isArray(node)) return node.map(migrateModelNode);
+
+  // Rule 1: unwrap outer condition(has_component) — promote inner select to root
+  if (node.type === "condition" && node.property === "has_component") {
+    return migrateModelNode(node.on_true);
+  }
+
+  // Rule 2: select with bare string "model" default → proper fallback node
+  if (node.type === "select" && typeof node.model === "string") {
+    const { model, fallback, ...rest } = node;
+    return migrateModelNode({
+      ...rest,
+      fallback: fallback ?? { type: "model", model },
+    });
+  }
+
+  // Rule 3: condition carrying a top-level "model" property → composite
+  // The "model" value was always the same as on_false; in modern syntax the base
+  // model is a permanent layer and the condition overlays on_true or nothing.
+  if (node.type === "condition" && node.model !== undefined) {
+    const { model: defaultModel, ...conditionWithoutModel } = node;
+    return {
+      type: "composite",
+      models: [
+        migrateModelNode({ ...conditionWithoutModel, on_false: { type: "empty" } }),
+        { type: "model", model: defaultModel },
+      ],
+    };
+  }
+
+  // Recurse into all child values
+  return Object.fromEntries(
+    Object.entries(node).map(([k, v]) => [k, migrateModelNode(v)])
+  );
 }
 
 applyItemFixes();
