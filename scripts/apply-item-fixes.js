@@ -15,6 +15,7 @@ if (!outDir) {
 // Named variants not updated for 26.1 - need to apply some fixes to v19.9 to work
 
 function applyItemFixes() {
+  // mace is old format and has a broken case
   const macePath = path.join(
     outDir,
     "assets",
@@ -24,6 +25,30 @@ function applyItemFixes() {
   );
   if (fs.existsSync(macePath)) {
     fixMaceItemSyntax(macePath);
+  }
+
+  // trident needs new rotation
+  const tridentPath = path.join(
+    outDir,
+    "assets",
+    "minecraft",
+    "items",
+    "trident.json",
+  );
+  if (fs.existsSync(tridentPath)) {
+    fixTridentRotation(tridentPath);
+  }
+
+  // shield needs new rotation
+  const shieldPath = path.join(
+    outDir,
+    "assets",
+    "minecraft",
+    "items",
+    "shield.json",
+  );
+  if (fs.existsSync(shieldPath)) {
+    fixShieldRotation(shieldPath);
   }
 }
 
@@ -55,7 +80,6 @@ function migrateModelNode(node) {
 
   // Special case: Stormlander is broken
   if (node.when === "Stormlander") {
-
     return {
       when: "Stormlander",
       model: {
@@ -100,6 +124,26 @@ function migrateModelNode(node) {
   return Object.fromEntries(
     Object.entries(node).map(([k, v]) => [k, migrateModelNode(v)]),
   );
+}
+
+const TRANSFORMATION = {
+  left_rotation: [0, 0, 0, 1],
+  right_rotation: [0, 0, 0, 1],
+  scale: [1, -1, -1],
+  translation: [0, 0, 0],
+};
+
+function fixTridentRotation(filePath) {
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  data.model.fallback.fallback.transformation = TRANSFORMATION;
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+function fixShieldRotation(filePath) {
+  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+  data.model.on_false.fallback.on_false.transformation = TRANSFORMATION;
+  data.model.on_true.fallback.on_false.transformation = TRANSFORMATION;
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 }
 
 applyItemFixes();
