@@ -15,7 +15,13 @@ if (!outDir) {
 // Named variants not updated for 26.1 - need to apply some fixes to v19.9 to work
 
 function applyItemFixes() {
-  const macePath = path.join(outDir, "assets", "minecraft", "items", "mace.json");
+  const macePath = path.join(
+    outDir,
+    "assets",
+    "minecraft",
+    "items",
+    "mace.json",
+  );
   if (fs.existsSync(macePath)) {
     fixMaceItemSyntax(macePath);
   }
@@ -47,6 +53,18 @@ function migrateModelNode(node) {
   if (!node || typeof node !== "object") return node;
   if (Array.isArray(node)) return node.map(migrateModelNode);
 
+  // Special case: Stormlander is broken
+  if (node.when === "Stormlander") {
+
+    return {
+      when: "Stormlander",
+      model: {
+        type: "model",
+        model: "item/mace/stormlander",
+      },
+    };
+  }
+
   // Rule 1: unwrap outer condition(has_component) — promote inner select to root
   if (node.type === "condition" && node.property === "has_component") {
     return migrateModelNode(node.on_true);
@@ -69,7 +87,10 @@ function migrateModelNode(node) {
     return {
       type: "composite",
       models: [
-        migrateModelNode({ ...conditionWithoutModel, on_false: { type: "empty" } }),
+        migrateModelNode({
+          ...conditionWithoutModel,
+          on_false: { type: "empty" },
+        }),
         { type: "model", model: defaultModel },
       ],
     };
@@ -77,7 +98,7 @@ function migrateModelNode(node) {
 
   // Recurse into all child values
   return Object.fromEntries(
-    Object.entries(node).map(([k, v]) => [k, migrateModelNode(v)])
+    Object.entries(node).map(([k, v]) => [k, migrateModelNode(v)]),
   );
 }
 
