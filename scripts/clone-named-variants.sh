@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SOURCE_URL="https://cdn.modrinth.com/data/ybctGziT/versions/P98U2Swe/TooManyRenames%2026.1%20by%20Mickey%20Joe.zip?mr_download_reason=standalone"
+SOURCE_URL="https://cdn.modrinth.com/data/ybctGziT/versions/nglKpsjE/TooManyRenamesV21.zip?mr_download_reason=standalone&mr_game_version=26.3&mr_loader=minecraft"
 
 DIR=$(dirname -- "$( readlink -f -- "$0"; )")
 
