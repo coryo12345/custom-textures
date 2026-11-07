@@ -232,7 +232,8 @@ class DatapackVariantRegister {
    * @returns {string}
    */
   #getDispatchString(slot, name, asset_id) {
-    return `execute if data entity @s {SelectedItem:{components:{"minecraft:custom_name":"${name}"}}} run item modify entity @s weapon.mainhand {"function":"minecraft:set_components","components": {"minecraft:equippable":{"slot":"${slot}","asset_id":"${asset_id}"}}}`;
+    const q = (s) => JSON.stringify(s); // quotes + escapes " and \ for SNBT
+    return `execute if items entity @s weapon.mainhand *[minecraft:custom_name=${q(name)}] run item modify entity @s weapon.mainhand {type:"minecraft:set_components",components:{"minecraft:equippable":{slot:${q(slot)},asset_id:${q(asset_id)}}}}`;
   }
 }
 
